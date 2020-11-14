@@ -1,27 +1,39 @@
 #include <Arduino.h>
 #include "sensors.h"
-#include "system_signal.h"
+#include "wifi_conn.h"
+#include "mqtt.h"
 
 int sensor_select;
 bool debug_state;
 bool dht_init;
 bool sensors_init;
 bool state;
+                 
+const char* mqtt_topic = "SignalIO/test";
 
-String topic[] = {"test/test", "test2/test2"};
+sensors sensor; 
+wifiConn WifiConn;
+mqtt MQTT;
 
-sensors sensor;
 
-void sys_error(){
-  for(int i = 0; i<=5; i++){
-    signal_led(2);
-  }
+void signal_led(int time){
+  digitalWrite(SIGNAL_LED, HIGH);
+  delay(time);
+  digitalWrite(SIGNAL_LED, LOW);
+  delay(time);
 }
 
+//TODO
 void sys_reset(){
-  //TODO
+  for (size_t i = 0; i < 5; i++)
+  {
+    signal_led(100);
+  }
+  ESP.restart();
+  
 }
 
+//TODO
 void pwr_manager(){
   //TODO
 }
@@ -62,11 +74,10 @@ void digital_sensor(){
     int res = sensor.digital_sensor_read();
     if(res == HIGH){
       if(!state){
-        if(debug_state){
-          Serial.println("Digital sensor activated"); //Debug msg
-          Serial.println("\n");
-          signal_led(1000);
-        }
+        Serial.println("Digital sensor activated"); //Debug msg
+        Serial.println("\n");
+        MQTT.mqtt_pub("HIGH");
+        signal_led(1000);
       }
       state = true;
     }
@@ -78,13 +89,13 @@ void digital_sensor(){
   }
   else
   {
-    digitalWrite(13, LOW);
+    digitalWrite(SIGNAL_LED, HIGH);
     sensor.sensor_init();
     sensors_init = true;
     if(debug_state){
       Serial.println("Digital sensor calibration done!\n"); //Debug msg
     }
-    digitalWrite(13, HIGH);
+    digitalWrite(SIGNAL_LED, LOW);
   }
 }
 
@@ -92,6 +103,7 @@ void analog_sensor(){
  if(sensors_init){
     float res = sensor.analog_sensor_read();
     Serial.println(res); //Debug msg
+    MQTT.mqtt_pub(String(res));
     signal_led(1000);
   }
   else
@@ -107,32 +119,49 @@ void analog_sensor(){
 }
 
 void relay(){
- // TODO. Needed MQTT
+ // TODO. MQTT needed
 }
+
 
 void setup()
 {
-  pinMode(13, OUTPUT);
-
+  pinMode(UNIVERSAL_PIN_ONE, INPUT_PULLUP);
+  pinMode(SIGNAL_LED, OUTPUT);
   Serial.begin(9600);
+  sensor_select = 0xC6;
+
+  for (size_t i = 0; i < 5; i++)
+  {
+    signal_led(500);
+  }
+
   Serial.println("System init...");
-
-  sensor_select = 0xC7;
-
-  if(sensor_select == DHT11){
-    Serial.println("DHT11 module selected\n");
-  }else if(sensor_select == DIGITAL_SENSOR){
-    Serial.println("Digital sensor selected\n");
-  }else if (sensor_select == ANALOG_SENSOR){
-    Serial.println("Analog sensor selected\n");
-  }else if(sensor_select == RELAY){
-    Serial.println("Relay module selected\n");
+  bool state = WifiConn.wifi_connect();
+  if(state){
+      Serial.println("Wi-Fi connected");
+      WifiConn.printCurrentNet();
+      WifiConn.printWifiData();
+      bool mqtt_state = MQTT.mqtt_connect();
+      if(mqtt_state){
+        Serial.println("MQTT connected!");
+        Serial.printf("Sensor: %x", sensor_select);
+      }
+      else
+      {
+        Serial.println("MQTT error. Not connected");
+        sys_reset();
+      }    
+  }    
+  else
+  {
+    Serial.println("Wifi not connected");
+    sys_reset();
   }
 }
 
+
 void loop() 
 {
-
   switch (sensor_select)
   {
   case DHT11:

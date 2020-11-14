@@ -18,8 +18,6 @@ private:
     float temp;
 
 public:
-    sensors(/* args */);
-    ~sensors();
 
     //dht11 sensor
     void dht11_init(void);
@@ -32,12 +30,12 @@ public:
     float analog_sensor_read(void);
 };
 
-sensors::sensors(/* args */)
-{
-}
+// sensors::sensors(/* args */)
+// {
+// }
 
-sensors::~sensors()
-{
-}
+// sensors::~sensors()
+// {
+// }
 
 #endif
