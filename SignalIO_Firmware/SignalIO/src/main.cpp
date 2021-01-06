@@ -15,12 +15,14 @@ bool state;
 bool relay_pin = false;
                  
 const char* mqtt_topic = "SignalIO/test";
+const char* config_path = "/config.json";
 
 sensors sensor; 
 wifiConn WifiConn;
 mqtt MQTT;
 FileSystem fileSystem;
 
+StaticJsonDocument <1024> config;
 
 void signal_led(int time){
   digitalWrite(SIGNAL_LED, HIGH);
@@ -220,8 +222,13 @@ void setup()
   if(!file_state){
     Serial.println("File not found");
   }
-  Serial.println("Config server started\nUse your local IP to connect");
-  config_menu();
+  // Serial.println("Config server started\nUse your local IP to connect");
+  // config_menu();
+
+  delay(5000);
+  //config = fileSystem.get_config(config_path);
+  //deserializeJson(config, Serial);
+  Serial.println("Config deserialized");
 }
 
 

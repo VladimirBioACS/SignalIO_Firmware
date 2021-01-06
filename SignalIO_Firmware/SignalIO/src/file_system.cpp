@@ -14,10 +14,30 @@ bool FileSystem::read_file(const char* path){
     while(file.available()){
         Serial.write(file.read());
     }
+    Serial.println(""); // \n
     file.close();
     return true;
 }
 
+StaticJsonDocument<1024> FileSystem::get_config(const char* path){
+
+  DynamicJsonDocument json_config(1024);
+
+  File configFile = SPIFFS.open(path, "r");
+  if(!configFile){
+    Serial.println("failed to load JSON config");
+    configFile.close();
+    return json_config;
+  }
+  size_t size = configFile.size();
+  std::unique_ptr<char[]> buf(new char[size]);
+  configFile.readBytes(buf.get(), size);
+
+  //serializeJson(json_config, buf);
+  //deserializeJson(buf, json_config);
+
+  return json_config;
+}
 
 bool FileSystem::test_fs(){
 

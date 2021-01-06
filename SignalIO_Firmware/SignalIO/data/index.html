@@ -53,7 +53,7 @@
                             <br>
                             Sensor Type
                             <br>
-                            <select name="port_one_state" class="form-control" id="sensor_type">
+                            <select name="module" class="form-control" id="sensor_type">
                                 <option value="198">Digital sensor</option>
                                 <option value="197">Analog sensor</option>
                                 <option value="199">DHT11 Sensor</option>
@@ -62,7 +62,7 @@
                             <br>
                             Sensor Port
                             <br>
-                            <select name="port_two_state" class="form-control" id="sensor_port">
+                            <select name="module_port" class="form-control" id="sensor_port">
                                 <option value="2">IO2</option>
                                 <option value="4">IO4</option>
                                 <option value="5">IO5</option>
@@ -87,7 +87,10 @@
                             <br>
                             Debug mode
                             <br>
-                              <input data-on="On" data-off="Off" name="debug_state" type="checkbox" checked data-toggle="toggle" data-style="ios" data-onstyle="success">
+                            <select name="debug_flag" class="form-control" id="sensor_type">
+                              <option value="1">On</option>
+                              <option value="0">Off</option>
+                            </select>
                             </div>
                           </div>
                         </div>
@@ -150,7 +153,10 @@
                             <br>
                             Enable DeepSleep
                             <br>
-                            <input name="deepsleep_state" type="checkbox" checked data-toggle="toggle" data-style="ios" data-onstyle="success">
+                            <select name="deepsleep_flag" class="form-control" id="sensor_type">
+                              <option value="1">On</option>
+                              <option value="0">Off</option>
+                          </select>
                           </div>
                           </div>
                         </div>
