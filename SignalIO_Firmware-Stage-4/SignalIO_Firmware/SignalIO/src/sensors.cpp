@@ -1,8 +1,4 @@
-#include "Arduino.h"
 #include "sensors.h"
-#include <DHT.h>
-#include <DHT_U.h>
-#include "DHT.h"
 
 DHT dht(UNIVERSAL_PIN_ONE, DHTTYPE);
 
@@ -31,19 +27,18 @@ float sensors::read_temp(void){
 }
 
 void sensors::sensor_init(){
-    pinMode(UNIVERSAL_PIN_ONE, INPUT);
+    pinMode(module_pin, INPUT);
     for(int i=0; i<=calibration_time; i++){
         delay(1000);
     }
-    
 }
 
 int sensors::digital_sensor_read(){
-    int state = digitalRead(UNIVERSAL_PIN_ONE);
+    int state = digitalRead(module_pin);
     return state;
 }
 
-float sensors::analog_sensor_read(){
-    float state = analogRead(UNIVERSAL_PIN_ONE);
+int sensors::analog_sensor_read(){
+    int state = analogRead(module_pin);
     return state;
 }

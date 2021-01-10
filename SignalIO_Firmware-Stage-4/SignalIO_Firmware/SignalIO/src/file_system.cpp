@@ -1,24 +1,6 @@
 #include "file_system.h"
 
 
-bool FileSystem::read_file(const char* path){
-    File file = SPIFFS.open(path, "r");
-    size_t size = file.size();
-    
-    if(!file){
-        Serial.println("Error opening file: " + String(path));
-        return false;
-    }
-    Serial.println("Config file exist: " + String(path));
-    Serial.printf("File size: %i (bytes)\n", size);
-    while(file.available()){
-        Serial.write(file.read());
-    }
-    Serial.println(""); // \n
-    file.close();
-    return true;
-}
-
 StaticJsonDocument<1024> FileSystem::get_config(const char* path){
 
   StaticJsonDocument<1024> json_config;
@@ -36,10 +18,23 @@ StaticJsonDocument<1024> FileSystem::get_config(const char* path){
   return json_config;
 }
 
-// bool FileSystem::test_fs(){
-
-// }
-
+bool FileSystem::read_file(const char* path){
+    File file = SPIFFS.open(path, "r");
+    size_t size = file.size();
+    
+    if(!file){
+        Serial.println("Error opening file: " + String(path));
+        return false;
+    }
+    Serial.println("Config file exist: " + String(path));
+    Serial.printf("File size: %i (bytes)\n", size);
+    while(file.available()){
+        Serial.write(file.read());
+    }
+    Serial.println(""); // \n
+    file.close();
+    return true;
+}
 
 bool FileSystem::write_file(const char* path, char buff[]){
     File f = SPIFFS.open(path, "w");

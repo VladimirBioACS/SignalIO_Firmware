@@ -1,22 +1,10 @@
 #include "mqtt.h"
-#include "json_lib.h"
 
-// const char* device_id = "Sensor_1";
-// const char* mqttServer = "broker.shiftr.io";
-// const char* mqttUser = "da4f1d0e";
-// const char* mqttPassword = "72b8e7c8e7efea4d";
-
-// const char* mqttServer = "192.168.0.104";
-// const char* mqttUser = "esp8266";
-// const char* mqttPassword = "user1234";
 const char* message;
 
-// flash MEMORY;
 WiFiClient wifiClient;
 PubSubClient clientMQTT(wifiClient);
 
-
-// String message_mqtt;
 
 void reconnect(const char* topic, const char* device_id, const char* mqttUser, const char* mqttPassword)
 {
@@ -91,11 +79,8 @@ bool mqtt::mqtt_connect(){
         if (clientMQTT.connect(device_id, mqttUser, mqttPassword))
         { 
             clientMQTT.setServer(mqttServer, mqttPort);
-            // for (size_t i = 0; i <= len-1; i++)
-            // {
-            //     clientMQTT.subscribe(topic[i]);
-            // }
-            clientMQTT.subscribe(topic);
+            //clientMQTT.subscribe(topic);
+            //clientMQTT.subscribe(service_topic);
             clientMQTT.setCallback(callback);
         }
         else

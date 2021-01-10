@@ -52,7 +52,7 @@ void config_menu(){
         ESP.restart();
     });
 
-    //TODO
+    //TODO (test)
     server.on("/change-auth-creds", HTTP_POST, [](AsyncWebServerRequest *request){
         if(!request->authenticate(auth_login, auth_password)){
             return request->requestAuthentication();
@@ -78,7 +78,7 @@ void config_menu(){
         request->send(SPIFFS, "/index.html");
     });
 
-    // TODO
+    // TODO (test)
     server.on("/reboot-device", HTTP_GET, [](AsyncWebServerRequest *request){
         if(!request->authenticate(auth_login, auth_password)){
             return request->requestAuthentication();
@@ -99,11 +99,17 @@ void config_menu(){
 
 
     server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
+        if(!request->authenticate(auth_login, auth_password)){
+            return request->requestAuthentication();
+        }
         request->send(SPIFFS, "/style.css", "text/css");
     });
 
 
     server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request){
+        if(!request->authenticate(auth_login, auth_password)){
+            return request->requestAuthentication();
+        }
         request->send(SPIFFS, "/script.js", "text/javascript");
     });
 
