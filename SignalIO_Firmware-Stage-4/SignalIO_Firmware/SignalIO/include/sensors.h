@@ -3,6 +3,7 @@
 #include <DHT_U.h>
 #include "DHT.h"
 
+
 #ifndef SENSORS_H
 #define SENSORS_H
 
@@ -12,6 +13,7 @@
 #define DIGITAL_SENSOR 0xC6
 #define ANALOG_SENSOR 0xC5
 #define RELAY 0xC4
+#define PIR_SENSOR 0xC3
 
 class sensors
 {
@@ -33,6 +35,7 @@ public:
     void sensor_init(void);
     int digital_sensor_read(void);
     int analog_sensor_read(void);
+    void relay_init(void);
 };
 
 #endif

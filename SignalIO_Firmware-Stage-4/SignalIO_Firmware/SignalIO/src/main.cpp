@@ -5,9 +5,10 @@
 #include "wifi_conn.h"
 #include "mqtt.h"
 #include "config_menu.h"
+#include "json_msg_packer.h"
+#include "error_codes.h"
 
-int sensor_select;
-uint8_t fact = 23;
+uint8_t sensor_select;
 
 bool debug_state;
 bool config_state;
@@ -16,13 +17,13 @@ bool sensors_init;
 bool state;
 bool relay_pin = false;
                  
-const char* mqtt_topic = "SignalIO/test";
 const char* config_path = "/config.json";
 
 FileSystem fileSystem;
 sensors sensor; 
 wifiConn WifiConn;
 mqtt MQTT;
+MessagePacker packer;
 
 StaticJsonDocument<1024> config;
 
@@ -33,9 +34,11 @@ void load_params(){
   MQTT.mqttServer = config["mqtt_brocker"];
   MQTT.topic = config["mqtt_topic"];
   MQTT.callback_msg = config["mqtt_callback"];
+  MQTT.sensor_port = atoi(config["module_port"]);
 
   sensor.module_pin = atoi(config["module_port"]);
 }
+
 
 void signal_led(int time){
   digitalWrite(SIGNAL_LED, HIGH);
@@ -46,7 +49,7 @@ void signal_led(int time){
 
 //TODO
 void sys_reset(){
-  int state = digitalRead(fact);
+  int state = digitalRead(FACT_RESET_BTN);
   if(state == LOW){
      bool sys_reset_flag = fileSystem.config_reset(config_path);
      if(sys_reset_flag){
@@ -65,95 +68,63 @@ void pwr_manager(){
   //TODO
 }
 
-void error(){
-  char buf[20];
-  DynamicJsonDocument err(150);
-  JsonObject message = err.to<JsonObject>();
-  message["error"] = "1";
-  serializeJson(message, buf);
-  MQTT.mqtt_pub(String(buf));
-}
 
 void dht_sensor(){
-    DynamicJsonDocument sensor_data(150);
-    DynamicJsonDocument sensor_data_container(150);
-    JsonObject msg = sensor_data.to<JsonObject>();
+  if(dht_init){
+  float temperature = sensor.read_temp();
+  float humidity = sensor.read_hum();
 
-    char buff[255];
-
-    // if(dht_init){
-    // float temperature = 22.0;//sensor.read_temp();
-    // float humidity = 22.0;//sensor.read_hum();
-
-    // if(temperature == 0 || humidity == 0){
-    //   if(debug_state){
-    //     Serial.println("DHT11 Module error!!!\n");
-    //     error();
-    //     signal_led(1000);
-    //   }
-    // }else{
-      // if(debug_state){
-      //   Serial.println(temperature); //Debug msg
-      //   Serial.println(humidity); //Debug msg
-      //   signal_led(1000);
-      // }
-
-      msg["name"] = "temperature";
-      msg["value"] = "23.00";
-      msg["type"] = "string";
-
-      JsonArray data = sensor_data_container.createNestedArray("props");
-      data.add(msg);
-      
-      serializeJsonPretty(sensor_data_container, buff);
-
-      //String dht_json_msg = "{\"temperature\":" + String(temperature) + ", \"humidity\":" + String(humidity) + "}";
-      MQTT.mqtt_sub();
-      error();
-      //MQTT.mqtt_pub(String(buff));
-    //}
-    delay(1000);
+  if(temperature == 0 || humidity == 0){
+    MQTT.mqtt_pub(packer.error(DHT_SENSOR_NOT_FOUND));
+    signal_led(1000);
   }
-  // else
-  // {
-  //   sensor.dht11_init();
-  //   dht_init = true;
-  //   if(debug_state){
-  //     Serial.println("dht11 setup done!\n"); //Debug msg
-  //   }
-  // }
+  Serial.println(temperature); //Debug msg
+  Serial.println(humidity); //Debug msg
+      
+  MQTT.mqtt_pub(packer.pack("23.00", "temperature", STRING));
+  MQTT.mqtt_sub();
 
-//}
+  signal_led(1000);
+  }
+  else
+  {
+    sensor.dht11_init();
+    dht_init = true;
+    Serial.println("dht11 setup done!\n"); //Debug msg
+  }
+}
+
+
 void pir_motion_sensor(){
     const char* sensor_message = config["mqtt_callback"];
     if(sensors_init){
     int res = sensor.digital_sensor_read();
-    if(res == LOW){
+    if(res == HIGH){
       if(!state){
         Serial.println(sensor_message); //Debug msg
-        Serial.println("\n");
-        MQTT.mqtt_pub(sensor_message);
-        signal_led(1000);
+        MQTT.mqtt_pub(packer.pack(sensor_message, "PIR_sensor", STRING));
+        MQTT.mqtt_sub();
+        signal_led(100);
       }
       state = true;
     }
     else
     {
       state = false;
-      delay(1000);
+      delay(100);
     }
   }
   else
   {
+    Serial.println("PIR sensor calibration");
     digitalWrite(SIGNAL_LED, HIGH);
     sensor.sensor_init();
     sensors_init = true;
-    if(debug_state){
-      Serial.println("Digital sensor calibration done!\n"); //Debug msg
-    }
+    Serial.println("PIR sensor calibration done!\n"); //Debug msg
     digitalWrite(SIGNAL_LED, LOW);
   }
 }
+
 
 void digital_sensor(){
     const char* sensor_message = config["mqtt_callback"];
@@ -161,8 +132,9 @@ void digital_sensor(){
     int res = sensor.digital_sensor_read();
     if(res == LOW){
         Serial.println(sensor_message); //Debug msg
-        MQTT.mqtt_pub(sensor_message);
-        signal_led(100);
+        MQTT.mqtt_pub(packer.pack(sensor_message, "digital_sensor", STRING));
+        MQTT.mqtt_sub();
+        signal_led(1000);
     }
   }
   else
@@ -176,12 +148,15 @@ void digital_sensor(){
   }
 }
 
+
 void analog_sensor(){
-    int res = sensor.analog_sensor_read();
-    Serial.println(res); //Debug msg
-    MQTT.mqtt_pub(String(res));
-    signal_led(100);
+    int analog_sensor_message = sensor.analog_sensor_read();
+    Serial.println(analog_sensor_message); //Debug msg
+    MQTT.mqtt_pub(packer.pack(String(analog_sensor_message).c_str(), "analog sensor", STRING));
+    MQTT.mqtt_sub();
+    signal_led(1000);
 }
+
 
 void relay(){
  if(relay_pin){
@@ -189,19 +164,19 @@ void relay(){
   }
   else
   {
-    pinMode(UNIVERSAL_PIN_ONE, OUTPUT);
-    digitalWrite(UNIVERSAL_PIN_ONE, HIGH);
+    Serial.println("Actuator module selected");
+    MQTT.topic_sub(); // may not need
+    sensor.relay_init();
     relay_pin = true;
-    if(debug_state){
-      Serial.println("Actuator pin configuration done"); //Debug msg
-    }
+    Serial.println("Actuator pin configuration done"); //Debug msg
   }
 }
+
 
 void setup()
 {
   pinMode(SIGNAL_LED, OUTPUT);
-  pinMode(fact, INPUT_PULLUP);
+  pinMode(FACT_RESET_BTN, INPUT_PULLUP);
 
   Serial.begin(9600);
 
@@ -288,6 +263,7 @@ void setup()
   
   // Serial.println("Config deserialized");
   //Debug end
+  // MQTT.topic_sub();
 }
 
 
@@ -309,12 +285,17 @@ void loop()
     analog_sensor();
     break;
 
+  case PIR_SENSOR:
+    pir_motion_sensor();
+    break;
+
   case RELAY:
     relay();
     break;
   
   default:
-    Serial.println("No module selected");
+    Serial.println("No module selected"); // debug
+    MQTT.mqtt_pub(packer.error(MODULE_NOT_FOUND));
     signal_led(1000);
     break;
   }

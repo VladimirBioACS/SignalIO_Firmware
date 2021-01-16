@@ -2,7 +2,8 @@
 #include <PubSubClient.h>
 #include "wifi_conn.h"
 #include "json_lib.h"
-// #include <WiFiClient.h>
+#include "json_msg_packer.h"
+#include "error_codes.h"
 
 #ifndef NETWORK_H
 #define NETWORK_H
@@ -27,9 +28,12 @@ public:
     const char* callback_msg;
     const char* service_topic = "Sensor/Service";
 
+    uint8_t sensor_port;
+
     bool mqtt_connect();
     void mqtt_pub(String data);
     void mqtt_sub();
+    void topic_sub();
 
 };
 

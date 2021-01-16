@@ -4,13 +4,19 @@
 #ifndef PACKER_H
 #define PACKER_H
 
+#define REQUEST "request"
+#define RESPONSE "response"
+#define STRING "string"
+#define MODULE "module"
+
 class MessagePacker
 {
 private:
     /* data */
 public:
-    DynamicJsonDocument pack(DynamicJsonDocument sensor_data);
-    DynamicJsonDocument parser(DynamicJsonDocument callback);
+    String pack(const char* sensor_data, const char* module_name, const char* type);
+    //DynamicJsonDocument parser(const char* callback_messsage);
+    String error(const char* code);
 };
 
 

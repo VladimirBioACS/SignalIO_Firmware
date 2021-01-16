@@ -1,11 +1,32 @@
 #include "json_msg_packer.h"
 
-DynamicJsonDocument MessagePacker::pack(DynamicJsonDocument sensor_data){
-    DynamicJsonDocument req(255);
-    return req;
+String MessagePacker::pack(const char* sensor_data, const char* module_name, const char* type){
+    DynamicJsonDocument msg_container(255);
+    DynamicJsonDocument sensor_data_container(255);
+
+    JsonObject msg = sensor_data_container.to<JsonObject>();
+
+    msg["name"] = module_name;
+    msg["value"] = sensor_data;
+    msg["type"] = type;
+
+    JsonArray data = msg_container.createNestedArray("props");
+    char msg_buff[255];
+    data.add(msg);
+    serializeJsonPretty(msg_container, msg_buff);
+
+    return String(msg_buff);
 }
 
-DynamicJsonDocument MessagePacker::parser(DynamicJsonDocument callback){
-    DynamicJsonDocument call(255);
-    return call;
+// DynamicJsonDocument MessagePacker::parser(const char* callback_messsage){
+
+// }
+
+String MessagePacker::error(const char* code){
+  DynamicJsonDocument err(150);
+  JsonObject message = err.to<JsonObject>();
+  char err_buff[20];
+  message["error"] = code;
+  serializeJson(message, err_buff);
+  return String(err_buff); 
 }

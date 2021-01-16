@@ -42,3 +42,8 @@ int sensors::analog_sensor_read(){
     int state = analogRead(module_pin);
     return state;
 }
+
+void sensors::relay_init(){
+    pinMode(module_pin, OUTPUT_OPEN_DRAIN);
+    digitalWrite(module_pin, HIGH);
+}
