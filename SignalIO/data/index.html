@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>SignalIO Config</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+    <script src="https://kit.fontawesome.com/1fa6a854ed.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" type="text/javascript"></script>
+
+  </head>
+  <body>
+        <div class="site-wrapper">
+          <div class="site-wrapper-inner">
+            <div class="container">
+              <div class="masthead clearfix">
+                <div class="container inner">
+                  <h4 class="masthead-brand"><b>SignalIO Board</b> <span><i class="fas fa-microchip"></i></span></h4>
+                  <nav>
+                    <ul class="nav masthead-nav">
+                      <li class="active"><a href="#"> <span><i class="fas fa-cogs"></i></span> Configs</a></li>
+                      <li><a href="/settings"> <span><i class="fas fa-tools"></i></span> Board settings</a></li>
+                      <li><a href="/info"> <span><i class="far fa-question-circle"></i></span> Board info</a></li>
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+              <br>
+              <div class="inner cover">
+                <h1 class="cover-heading"> <span><i class="fas fa-cogs"></i></span> <b>Config Page</b></h1>
+                <br>
+ 		          <form class="" action="/save" method="post">
+                <div id="Slider" class="carousel slide" data-interval="false" data-ride="carousel" data-pause="hover">
+                  <ol class="carousel-indicators">
+                    <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                    <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                    <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+                  </ol>
+                  <div class="carousel-inner">
+                    <div class="carousel-item active">
+                      <div class="card-group">
+                        <div class="card text-white bg-transparent mb-3">
+                          <div class="card-body">
+                            <div class="form-group">
+                            Device Alias
+                            <br>
+                            <input name="alias" type="text" class="form-control" placeholder="Device alias" required maxlength="64">
+                            <br>
+                            Sensor Type
+                            <br>
+                            <select name="module" class="form-control" id="sensor_type">
+                                <option value="198">Digital sensor</option>
+                                <option value="197">Analog sensor</option>
+                                <option value="199">DHT11 Sensor</option>
+                                <option value="196">Relay</option>
+                                <option value="195">PIR Sensor</option>
+                            </select>
+                            <br>
+                            Sensor Port
+                            <br>
+                            <select name="module_port" class="form-control" id="sensor_port">
+                                <option value="2">IO2</option>
+                                <option value="4">IO4</option>
+                                <option value="5">IO5</option>
+                                <option value="12">IO12</option>
+                                <option value="13">IO13</option>
+                                <option value="14">IO14</option>
+                                <option value="15">IO15</option>
+                                <option value="16">IO16</option>
+                                <option value="17">IO17</option>
+                                <option value="18">IO18</option>
+                                <option value="19">IO19</option>
+                                <option value="21">IO21</option>
+                                <option value="22">IO22</option>
+                                <option value="25">IO25</option>
+                                <option value="26">IO26</option>
+                                <option value="27">IO27</option>
+                                <option value="32">IO32</option>
+                                <option value="33">IO33</option>
+                            </select>
+                            <!-- <br>
+                            Publication time
+                            <br>
+                            <input name="pub_time" type="text" class="form-control" placeholder="Publication time" required>
+                            <br>
+                            Debug mode
+                            <br>
+                            <select name="debug_flag" class="form-control" id="sensor_type">
+                              <option value="1">On</option>
+                              <option value="0">Off</option>
+                            </select> -->
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="carousel-item">
+                      <div class="card-group">
+                        <div class="card text-white bg-transparent mb-3">
+                          <div class="card-body">
+                            <div class="form-group">
+                            MQTT Brocker
+                            <br>
+                            <input name="mqtt_brocker" type="text" class="form-control" placeholder="MQTT brocker" required maxlength="150">
+                            <br>
+                            MQTT User
+                            <br>
+                            <input name="mqtt_user" type="text" class="form-control" placeholder="MQTT user" required maxlength="64">
+                            <br>
+                            MQTT Password
+                            <br>
+                            <input name="mqtt_pass" type="text" class="form-control" placeholder="MQTT password" required maxlength="64">
+                            <br>
+                            MQTT Topic
+                            <br>
+                            <input name="mqtt_topic" type="text" class="form-control" placeholder="MQTT topic" required maxlength="150">
+                            <br>
+                            MQTT Message
+                            <br>
+                            <input name="mqtt_callback" type="text" class="form-control" placeholder="MQTT message" required maxlength="64">
+                          </div>
+                          </div>
+                        </div>
+                      </div>
+
+
+                    </div>
+                    <div class="carousel-item">
+                      <div class="card-group">
+                        <div class="card text-white bg-transparent mb-3">
+                          <div class="card-body">
+                            <div class="form-group">
+                            DeepSleep Type
+                            <br>
+                            <select name="deepsleep_type" class="form-control" id="deepsleep_type">
+                              <option value="1">Timer</option>
+                              <option value="0">Pin Trigger</option>
+                            </select>
+                            <!-- <br>
+                            DeepSleep Port
+                            <br>
+                            <select name="deepsleep_port" class="form-control" id="deepsleep_port">
+                                <option value="14">IO14</option>
+                                <option value="15">IO15</option>
+                            </select> -->
+                            <br>
+                            DeepSleep Timer
+                            <br>
+                            <input name="deepseep_tmr" type="text" class="form-control" placeholder="DeepSleep Timer (Sec)" type="number" maxlength="5">
+                            <br>
+                            Enable DeepSleep
+                            <br>
+                            <select name="deepsleep_flag" class="form-control" id="sensor_type">
+                              <option value="1">On</option>
+                              <option value="0">Off</option>
+                          </select>
+                          </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+                <a class="carousel-control-prev" href="#Slider" role="button" data-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span class="sr-only">Previous</span>
+                </a>
+                <a class="carousel-control-next" href="#Slider" role="button" data-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="sr-only">Next</span>
+                </a>
+                <br>
+                <p class="lead">
+                  <button type="submit" class="btn btn-sm btn-default">Save</button>
+                </p>
+              </form>
+              </div>
+            </div>
+          </div>
+        </div>
+  </body>
+</html>
