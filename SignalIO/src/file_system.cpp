@@ -72,9 +72,8 @@ bool FileSystem::write_file(const char* path, char buff[]){
     return false;   
 }
 
-bool FileSystem::config_reset(const char* path){
+bool FileSystem::config_reset(const char* path, int key){
     StaticJsonDocument<20> config_rst;
-    config_rst["config_flag"] = 1;
     
     File config = SPIFFS.open(path, "w");
 
@@ -83,6 +82,21 @@ bool FileSystem::config_reset(const char* path){
       config.close();
       return false;
     }
-    serializeJson(config_rst, config);
+    switch (key)
+        {
+        case 0:
+            config_rst["config_flag"] = 1;
+            serializeJson(config_rst, config);
+            break;
+        
+        case 1:
+            config_rst[""] = 0;
+            serializeJson(config_rst, config);
+            break;
+
+        default:
+            break;
+        }
+
     return true;
 }

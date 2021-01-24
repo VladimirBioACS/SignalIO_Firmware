@@ -74,6 +74,7 @@ void wifiConn::printWifiData(){
   Serial.println(mac[0], HEX);
 }
 
+
 void wifiConn::wifi_manager(){
   AsyncWebServer wifi_server(WIFI_MANAGER_PORT);
   WiFi.softAP(access_point_ssid, access_point_passwor);

@@ -25,7 +25,8 @@
                     <ul class="nav masthead-nav">
                       <li class="active"><a href="#"> <span><i class="fas fa-cogs"></i></span> Configs</a></li>
                       <li><a href="/settings"> <span><i class="fas fa-tools"></i></span> Board settings</a></li>
-                      <li><a href="/info"> <span><i class="far fa-question-circle"></i></span> Board info</a></li>
+                      <li><a href="/info"> <span><i class="far fa-question-circle"></i></span> Board pinout</a></li>
+                      <li><a href="https://github.com/"> <span><i class="fab fa-github"></i></span> Github</a></li>
                     </ul>
                   </nav>
                 </div>
@@ -54,11 +55,12 @@
                             Sensor Type
                             <br>
                             <select name="module" class="form-control" id="sensor_type">
-                                <option value="198">Digital sensor</option>
-                                <option value="197">Analog sensor</option>
+                                <option value="198">Digital sensor interface</option>
+                                <option value="197">Analog sensor interface</option>
+                                <option value="196">Actuator</option>
                                 <option value="199">DHT11 Sensor</option>
-                                <option value="196">Relay</option>
                                 <option value="195">PIR Sensor</option>
+                                <option value="194">Hall Sensor</option>
                             </select>
                             <br>
                             Sensor Port
@@ -82,18 +84,16 @@
                                 <option value="27">IO27</option>
                                 <option value="32">IO32</option>
                                 <option value="33">IO33</option>
+                                <option value="35">IO35</option>
+                                <option value="36">IO36</option>
                             </select>
-                            <!-- <br>
-                            Publication time
                             <br>
-                            <input name="pub_time" type="text" class="form-control" placeholder="Publication time" required>
+                            Save actuator state
                             <br>
-                            Debug mode
-                            <br>
-                            <select name="debug_flag" class="form-control" id="sensor_type">
-                              <option value="1">On</option>
-                              <option value="0">Off</option>
-                            </select> -->
+                            <select name="save_actuator_state" class="form-control" id="save_actuator_state">
+                              <option value="1">Yes</option>
+                              <option value="0">No</option>
+                          </select>
                             </div>
                           </div>
                         </div>
@@ -129,7 +129,6 @@
                         </div>
                       </div>
 
-
                     </div>
                     <div class="carousel-item">
                       <div class="card-group">
@@ -142,13 +141,6 @@
                               <option value="1">Timer</option>
                               <option value="0">Pin Trigger</option>
                             </select>
-                            <!-- <br>
-                            DeepSleep Port
-                            <br>
-                            <select name="deepsleep_port" class="form-control" id="deepsleep_port">
-                                <option value="14">IO14</option>
-                                <option value="15">IO15</option>
-                            </select> -->
                             <br>
                             DeepSleep Timer
                             <br>
@@ -164,7 +156,6 @@
                           </div>
                         </div>
                       </div>
-
                     </div>
                   </div>
                 </div>

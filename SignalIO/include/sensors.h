@@ -2,7 +2,7 @@
 #include <DHT.h>
 #include <DHT_U.h>
 #include "DHT.h"
-
+#include "file_system.h"
 
 #ifndef SENSORS_H
 #define SENSORS_H
@@ -14,6 +14,7 @@
 #define ANALOG_SENSOR 0xC5
 #define RELAY 0xC4
 #define PIR_SENSOR 0xC3
+#define HALL_SENSOR 0xC2
 
 class sensors
 {

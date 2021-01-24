@@ -4,12 +4,15 @@ const char* message;
 
 const char* mqtt_callback_message;
 const char* mqtt_topic;
+bool save_actuator_state;
+
 uint8_t module_pin;
 
 WiFiClient wifiClient;
 PubSubClient clientMQTT(wifiClient);
 mqtt actuator_mqtt;
 MessagePacker relay_msg_packer;
+FileSystem actuator_write_state;
 
 
 void reconnect(const char* topic, const char* device_id, const char* mqttUser, const char* mqttPassword)
@@ -34,10 +37,13 @@ void reconnect(const char* topic, const char* device_id, const char* mqttUser, c
 }
 
 
-void callback(char *msg, byte *payload, unsigned int length){
+void actuator_callback(char *msg, byte *payload, unsigned int length){
 
     StaticJsonDocument<200> msg_callback;
     StaticJsonDocument<200> document;
+    
+    DynamicJsonDocument actuator_cur_state(20);
+    char actuator_cur_state_buff[20];
 
     String received_message;
     String state_changer_on = mqtt_callback_message;
@@ -48,28 +54,47 @@ void callback(char *msg, byte *payload, unsigned int length){
     for (unsigned int i = 0; i < length; i++) {
        received_message += (char)payload[i];
     }
-    Serial.println(received_message); // debug
+    // Serial.println(received_message); // debug
 
     DeserializationError error = deserializeJson(msg_callback,received_message);
 
     validation = msg_callback["type"];
     message = msg_callback["actuator_state"];
 
-    //TODO (TEST)
     if(String(validation) == "request"){
         if(String(message) == state_changer_on){
             digitalWrite(module_pin, LOW);
             clientMQTT.publish(mqtt_topic, relay_msg_packer.pack(message, "actuator", RESPONSE).c_str());
+            
+            if(save_actuator_state){
+                actuator_cur_state["state"] = "1";
+                serializeJson(actuator_cur_state, actuator_cur_state_buff);
+
+                bool save_flag = actuator_write_state.write_file("/actuator_state.json", actuator_cur_state_buff);
+                if(!save_flag){
+                    Serial.println("State write failed!");
+                }
+            }
         }
         if(String(message) != state_changer_on){
             digitalWrite(module_pin, HIGH);
             clientMQTT.publish(mqtt_topic, relay_msg_packer.pack(message, "actuator", RESPONSE).c_str());
+            
+            if(save_actuator_state){
+                actuator_cur_state["state"] = "0";
+                serializeJson(actuator_cur_state, actuator_cur_state_buff);
+
+                bool save_flag = actuator_write_state.write_file("/actuator_state.json", actuator_cur_state_buff);
+                if(!save_flag){
+                    Serial.println("State write failed!");
+                }
+            }
         }
     }
     
     if(error){
-        Serial.println(F("deserializeJson() failed: ")); // debug
-        Serial.println(error.c_str()); // debug
+        // Serial.println(F("deserializeJson() failed: ")); // debug
+        // Serial.println(error.c_str()); // debug
         clientMQTT.publish(mqtt_topic, relay_msg_packer.message(ACTUATOR_REQUEST_NOT_RECOGNIZED, "error").c_str());
     }
 }
@@ -79,6 +104,7 @@ bool mqtt::mqtt_connect(){
     module_pin = sensor_port;
     mqtt_callback_message = callback_msg;
     mqtt_topic = topic;
+    save_actuator_state_flag = save_actuator_state_flag;
 
     while (!clientMQTT.connected())
     {   
@@ -86,7 +112,7 @@ bool mqtt::mqtt_connect(){
         if (clientMQTT.connect(device_id, mqttUser, mqttPassword))
         { 
             clientMQTT.setServer(mqttServer, mqttPort);
-            clientMQTT.setCallback(callback);
+            clientMQTT.setCallback(actuator_callback);
         }
         else
         {
