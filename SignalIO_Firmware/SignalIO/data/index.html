@@ -25,7 +25,8 @@
                     <ul class="nav masthead-nav">
                       <li class="active"><a href="#"> <span><i class="fas fa-cogs"></i></span> Configs</a></li>
                       <li><a href="/settings"> <span><i class="fas fa-tools"></i></span> Board settings</a></li>
-                      <li><a href="/info"> <span><i class="far fa-question-circle"></i></span> Board info</a></li>
+                      <li><a href="/info"> <span><i class="far fa-question-circle"></i></span> Board pinout</a></li>
+                      <li><a href="https://github.com/"> <span><i class="fab fa-github"></i></span> Github</a></li>
                     </ul>
                   </nav>
                 </div>
@@ -49,15 +50,17 @@
                             <div class="form-group">
                             Device Alias
                             <br>
-                            <input name="alias" type="text" class="form-control" placeholder="Device alias" required>
+                            <input name="alias" type="text" class="form-control" placeholder="Device alias" required maxlength="64">
                             <br>
                             Sensor Type
                             <br>
                             <select name="module" class="form-control" id="sensor_type">
-                                <option value="198">Digital sensor</option>
-                                <option value="197">Analog sensor</option>
+                                <option value="198">Digital sensor interface</option>
+                                <option value="197">Analog sensor interface</option>
+                                <option value="196">Actuator</option>
                                 <option value="199">DHT11 Sensor</option>
-                                <option value="196">Relay</option>
+                                <option value="195">PIR Sensor</option>
+                                <option value="194">Hall Sensor</option>
                             </select>
                             <br>
                             Sensor Port
@@ -68,6 +71,8 @@
                                 <option value="5">IO5</option>
                                 <option value="12">IO12</option>
                                 <option value="13">IO13</option>
+                                <option value="14">IO14</option>
+                                <option value="15">IO15</option>
                                 <option value="16">IO16</option>
                                 <option value="17">IO17</option>
                                 <option value="18">IO18</option>
@@ -79,18 +84,16 @@
                                 <option value="27">IO27</option>
                                 <option value="32">IO32</option>
                                 <option value="33">IO33</option>
+                                <option value="35">IO35</option>
+                                <option value="36">IO36</option>
                             </select>
                             <br>
-                            Publication time
+                            Save actuator state
                             <br>
-                            <input name="pub_time" type="text" class="form-control" placeholder="Publication time" required>
-                            <br>
-                            Debug mode
-                            <br>
-                            <select name="debug_flag" class="form-control" id="sensor_type">
-                              <option value="1">On</option>
-                              <option value="0">Off</option>
-                            </select>
+                            <select name="save_actuator_state" class="form-control" id="save_actuator_state">
+                              <option value="1">Yes</option>
+                              <option value="0">No</option>
+                          </select>
                             </div>
                           </div>
                         </div>
@@ -104,28 +107,27 @@
                             <div class="form-group">
                             MQTT Brocker
                             <br>
-                            <input name="mqtt_brocker" type="text" class="form-control" placeholder="MQTT brocker" required>
+                            <input name="mqtt_brocker" type="text" class="form-control" placeholder="MQTT brocker" required maxlength="150">
                             <br>
                             MQTT User
                             <br>
-                            <input name="mqtt_user" type="text" class="form-control" placeholder="MQTT user" required>
+                            <input name="mqtt_user" type="text" class="form-control" placeholder="MQTT user" required maxlength="64">
                             <br>
                             MQTT Password
                             <br>
-                            <input name="mqtt_pass" type="text" class="form-control" placeholder="MQTT password" required>
+                            <input name="mqtt_pass" type="text" class="form-control" placeholder="MQTT password" required maxlength="64">
                             <br>
                             MQTT Topic
                             <br>
-                            <input name="mqtt_topic" type="text" class="form-control" placeholder="MQTT topic" required>
+                            <input name="mqtt_topic" type="text" class="form-control" placeholder="MQTT topic" required maxlength="150">
                             <br>
                             MQTT Message
                             <br>
-                            <input name="mqtt_callback" type="text" class="form-control" placeholder="MQTT message" required>
+                            <input name="mqtt_callback" type="text" class="form-control" placeholder="MQTT message" required maxlength="64">
                           </div>
                           </div>
                         </div>
                       </div>
-
 
                     </div>
                     <div class="carousel-item">
@@ -136,20 +138,13 @@
                             DeepSleep Type
                             <br>
                             <select name="deepsleep_type" class="form-control" id="deepsleep_type">
-                                <option>Timer</option>
-                                <option>Pin trigger</option>
-                            </select>
-                            <br>
-                            DeepSleep Port
-                            <br>
-                            <select name="deepsleep_port" class="form-control" id="deepsleep_port">
-                                <option value="14">IO14</option>
-                                <option value="15">IO15</option>
+                              <option value="1">Timer</option>
+                              <option value="0">Pin Trigger</option>
                             </select>
                             <br>
                             DeepSleep Timer
                             <br>
-                            <input name="deepseep_tmr" type="text" class="form-control" placeholder="DeepSleep Timer (Sec)">
+                            <input name="deepseep_tmr" type="text" class="form-control" placeholder="DeepSleep Timer (Sec)" type="number" maxlength="5">
                             <br>
                             Enable DeepSleep
                             <br>
@@ -161,7 +156,6 @@
                           </div>
                         </div>
                       </div>
-
                     </div>
                   </div>
                 </div>

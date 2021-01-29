@@ -1,14 +1,20 @@
 #include "Arduino.h"
+#include <DHT.h>
+#include <DHT_U.h>
+#include "DHT.h"
+#include "file_system.h"
 
 #ifndef SENSORS_H
 #define SENSORS_H
 
 #define DHTTYPE DHT11
 
-#define DHT11 0xC7
+#define DHT11_SENSOR 0xC7
 #define DIGITAL_SENSOR 0xC6
 #define ANALOG_SENSOR 0xC5
 #define RELAY 0xC4
+#define PIR_SENSOR 0xC3
+#define HALL_SENSOR 0xC2
 
 class sensors
 {
@@ -19,6 +25,8 @@ private:
 
 public:
 
+    uint8_t module_pin;
+
     //dht11 sensor
     void dht11_init(void);
     float read_hum(void);
@@ -27,15 +35,8 @@ public:
     //simple sensor interface
     void sensor_init(void);
     int digital_sensor_read(void);
-    float analog_sensor_read(void);
+    int analog_sensor_read(void);
+    void relay_init(void);
 };
-
-// sensors::sensors(/* args */)
-// {
-// }
-
-// sensors::~sensors()
-// {
-// }
 
 #endif

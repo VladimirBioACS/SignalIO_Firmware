@@ -1,6 +1,23 @@
 #include "file_system.h"
 
 
+StaticJsonDocument<1024> FileSystem::get_config(const char* path){
+
+  StaticJsonDocument<1024> json_config;
+  File configFile = SPIFFS.open(path, "r");
+  if(!configFile){
+    Serial.println("failed to load JSON config"); // debug message
+    configFile.close();
+    return json_config;
+  }
+  size_t size = configFile.size();
+  std::unique_ptr<char[]> buf(new char[size]);
+  configFile.readBytes(buf.get(), size);
+  deserializeJson(json_config, buf.get());
+
+  return json_config;
+}
+
 bool FileSystem::read_file(const char* path){
     File file = SPIFFS.open(path, "r");
     size_t size = file.size();
@@ -11,38 +28,14 @@ bool FileSystem::read_file(const char* path){
     }
     Serial.println("Config file exist: " + String(path));
     Serial.printf("File size: %i (bytes)\n", size);
-    while(file.available()){
-        Serial.write(file.read());
-    }
-    Serial.println(""); // \n
+    // // Debug region
+    // while(file.available()){
+    //     Serial.write(file.read());
+    // }
+    // Serial.println(""); // \n
     file.close();
     return true;
 }
-
-StaticJsonDocument<1024> FileSystem::get_config(const char* path){
-
-  DynamicJsonDocument json_config(1024);
-
-  File configFile = SPIFFS.open(path, "r");
-  if(!configFile){
-    Serial.println("failed to load JSON config");
-    configFile.close();
-    return json_config;
-  }
-  size_t size = configFile.size();
-  std::unique_ptr<char[]> buf(new char[size]);
-  configFile.readBytes(buf.get(), size);
-
-  //serializeJson(json_config, buf);
-  //deserializeJson(buf, json_config);
-
-  return json_config;
-}
-
-bool FileSystem::test_fs(){
-
-}
-
 
 bool FileSystem::write_file(const char* path, char buff[]){
     File f = SPIFFS.open(path, "w");
@@ -53,6 +46,17 @@ bool FileSystem::write_file(const char* path, char buff[]){
         Serial.println("File not found"); // debug msg
         return false;
     }
+
+    if(strlen(buff) == 0){ // needs debug
+        Serial.println("Config is empty"); // debug msg
+        return false;
+    }
+
+    if(strlen(buff) > buff_size){ // needs debug
+        Serial.println("Config too large"); //debug msg
+        return false;
+    }
+
     if (size > buff_size)
     {
         f.close();
@@ -67,4 +71,34 @@ bool FileSystem::write_file(const char* path, char buff[]){
 
     Serial.println("Write failed"); //debug msg
     return false;   
+}
+
+bool FileSystem::config_reset(const char* path, int key){
+    StaticJsonDocument<20> config_rst;
+    
+    File config = SPIFFS.open(path, "w");
+
+    if(!config){
+      Serial.printf("File does not exist!\n");
+      config.close();
+      return false;
+    }
+    switch (key)
+        {
+        case 0:
+            config_rst["config_flag"] = 1;
+            serializeJson(config_rst, config);
+            break;
+        
+        case 1:
+            config_rst["ssid"] = 0;
+            config_rst["password"] = 0;
+            serializeJson(config_rst, config);
+            break;
+
+        default:
+            break;
+        }
+
+    return true;
 }

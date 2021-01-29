@@ -28,6 +28,19 @@ h5{
   text-shadow: none;
 }
 
+.msg-container{
+  margin-left:auto;
+  margin-right:auto;
+  margin-top:400px;
+  text-align:center;
+}
+
+.progress{
+  width: 70%;
+  margin-left:auto;
+  margin-right:auto;
+}
+
 .site-wrapper {
   display: table;
   width: 100%;
@@ -80,19 +93,20 @@ h5{
 .w-100{
   padding: 5%;
 }
-.row{
-  margin-top:50px;
+.btn-container{
+  columns:  100px 2;
 }
 .btn-settings{
-  width:56%;
-  border: 2px solid white;
-  padding: 10px;
-  border-radius: 100px;
   margin-left:auto;
   margin-right:auto;
+  width:25%;
+  padding: 10px;
 }
 .btn-settings:hover{
+  margin-left:auto;
+  margin-right:auto;
   background-color:white;
+  border-radius: 100px;
 }
 
 .info-container{

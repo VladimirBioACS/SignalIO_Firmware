@@ -1,8 +1,15 @@
 #include "wifi_conn.h"
  
+FileSystem fileSystem_wifi;
+
 
 bool wifiConn::wifi_connect(){
-    int counter = 0;
+  StaticJsonDocument<255> wifi_creds = fileSystem_wifi.get_config("/wifi_creds.json");
+  const char* ssid =  wifi_creds["ssid"];     
+  const char* password = wifi_creds["password"]; 
+
+  int counter = 0;
+
   digitalWrite(SIGNAL_LED, HIGH);
   while (status != WL_CONNECTED) {
     Serial.print("Attempting to connect to WPA SSID: ");
@@ -13,8 +20,8 @@ bool wifiConn::wifi_connect(){
     ++counter; 
     delay(10000);
     if(WL_MAX_ATTEMPT_CONNECTION == counter){
-      break;
-    }
+        break;
+      }
   }
   if(status == WL_CONNECTED){
     digitalWrite(SIGNAL_LED, LOW);
@@ -67,28 +74,46 @@ void wifiConn::printWifiData(){
   Serial.println(mac[0], HEX);
 }
 
+
 void wifiConn::wifi_manager(){
-  WiFiServer wifiServer(WIFI_MANAGER_PORT);
+  AsyncWebServer wifi_server(WIFI_MANAGER_PORT);
   WiFi.softAP(access_point_ssid, access_point_passwor);
   Serial.println("local wifi manager started");
+  
+  Serial.print("SoftAP name: ");
+  Serial.println(access_point_ssid);
+
   IPAddress ip = WiFi.softAPIP();
+  Serial.print("Use local ip to connect to Wi-Fi manager: ");
   Serial.println(ip);
 
-  wifiServer.begin();
+  wifi_server.on("/wifi_save_creds", HTTP_POST, [](AsyncWebServerRequest *request){
+    DynamicJsonDocument p_wifi(255);
+    char wifi_param_buff[255];
+
+    int param_parsed = request -> params();
+    Serial.println(param_parsed);
+
+    for(size_t i = 0; i < param_parsed; i++)
+    {
+        AsyncWebParameter* parameter = request->getParam(i);
+        p_wifi[parameter -> name()] = parameter -> value();
+    }
+    serializeJson(p_wifi, wifi_param_buff);
+
+    bool save_flag = fileSystem_wifi.write_file("/wifi_creds.json", wifi_param_buff);
+    if(!save_flag){
+        request -> send(SPIFFS, "/wifi_fail.html");
+    }
+    request -> send(SPIFFS, "/wifi_success.html");
+
+  });
+
+  wifi_server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS, "/wifi.html");
+  });
 
   while(1){
-    WiFiClient client = wifiServer.available();
-    if(client){
-      Serial.println("New client is connected");
-      client.println("HTTP/1.1 200 OK");
-      client.println("Content-type:text/html");
-      client.println("Connection: close");
-      client.println();
-      client.println(wifi_manager_page);
-      client.println();
-      client.stop();
-      Serial.println("Client disconnected");
-    }
+    wifi_server.begin();
   }
-
 }

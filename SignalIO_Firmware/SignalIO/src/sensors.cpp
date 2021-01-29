@@ -1,14 +1,14 @@
-#include "Arduino.h"
 #include "sensors.h"
-#include <DHT.h>
-#include <DHT_U.h>
-#include "DHT.h"
 
-DHT dht(UNIVERSAL_PIN_ONE, DHTTYPE);
+sensors sensor_pin;
+FileSystem actuator_file_system;
+DHT dht(sensor_pin.module_pin, DHTTYPE);
+
 
 void sensors::dht11_init(void){
     dht.begin();
 }
+
 
 float sensors::read_hum(void){
     hum = dht.readHumidity();
@@ -20,6 +20,7 @@ float sensors::read_hum(void){
     }
 }
 
+
 float sensors::read_temp(void){
     temp = dht.readTemperature();
     if(isnan(temp)){
@@ -30,21 +31,45 @@ float sensors::read_temp(void){
     }
 }
 
+
 void sensors::sensor_init(){
-    pinMode(UNIVERSAL_PIN_ONE, INPUT);
-    for(int i=0; i<=calibration_time; i++){
-        delay(1000);
-    }
-    
+    pinMode(module_pin, INPUT);
+    pinMode(14, OUTPUT_OPEN_DRAIN);
+    digitalWrite(14, LOW);
+    // for(int i=0; i<=calibration_time; i++){
+    //     delay(1000);
+    // }
 }
+
 
 int sensors::digital_sensor_read(){
-    int state = digitalRead(UNIVERSAL_PIN_ONE);
+    int state = digitalRead(module_pin);
     return state;
 }
 
-float sensors::analog_sensor_read(){
-    float state = analogRead(UNIVERSAL_PIN_ONE);
+
+int sensors::analog_sensor_read(){
+    int state = analogRead(module_pin);
     return state;
 }
 
+
+void sensors::relay_init(){
+    StaticJsonDocument<20> actuator_status;
+    actuator_status = actuator_file_system.get_config("/actuator_state.json");
+    int actuator_state = atoi(actuator_status["state"]);
+    pinMode(module_pin, OUTPUT_OPEN_DRAIN);
+    switch (actuator_state)
+    {
+    case 1:
+        digitalWrite(module_pin, LOW);
+        break;
+    
+    case 0:
+        digitalWrite(module_pin, HIGH);
+        break;
+    
+    default:
+        break;
+    }
+}

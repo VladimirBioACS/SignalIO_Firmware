@@ -19,7 +19,8 @@ class FileSystem{
     public:
         bool read_file(const char* path);
         bool write_file(const char* path, char buff[]);
-        bool test_fs(void);
+        bool config_reset(const char* path, int key);
+        
         StaticJsonDocument<1024> get_config(const char* path);
 };
 
