@@ -28,11 +28,10 @@ bool FileSystem::read_file(const char* path){
     }
     Serial.println("Config file exist: " + String(path));
     Serial.printf("File size: %i (bytes)\n", size);
-    // // Debug region
-    // while(file.available()){
-    //     Serial.write(file.read());
-    // }
-    // Serial.println(""); // \n
+    while(file.available()){
+        Serial.write(file.read());
+    }
+    Serial.println(""); // \n
     file.close();
     return true;
 }
@@ -91,8 +90,7 @@ bool FileSystem::config_reset(const char* path, int key){
             break;
         
         case 1:
-            config_rst["ssid"] = 0;
-            config_rst["password"] = 0;
+            config_rst[""] = 0;
             serializeJson(config_rst, config);
             break;
 

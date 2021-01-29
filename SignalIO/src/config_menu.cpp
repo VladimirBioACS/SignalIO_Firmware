@@ -195,7 +195,7 @@ void config_menu(){
         if(!request->authenticate(auth_login, auth_password)){
             return request->requestAuthentication();
         }
-        request->send(SPIFFS, "/info.html");
+        request->send(SPIFFS, "/info.html", "image/svg");
     });
 
 

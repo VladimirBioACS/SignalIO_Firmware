@@ -49,7 +49,6 @@ void get_system_info(){
   Serial.println(ESP.getSdkVersion());
 }
 
-
 void send_systme_info(){
     DynamicJsonDocument sys_info_msg_container(255);
     DynamicJsonDocument sys_info_data_container(255);
