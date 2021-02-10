@@ -32,6 +32,7 @@ bool wifiConn::wifi_connect(){
   }
 }
 
+
 void wifiConn::printCurrentNet(){
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
@@ -52,6 +53,7 @@ void wifiConn::printCurrentNet(){
   Serial.print("signal strength (RSSI):");
   Serial.println(rssi);
 }
+
 
 void wifiConn::printWifiData(){
   IPAddress ip = WiFi.localIP();
@@ -103,13 +105,10 @@ void wifiConn::wifi_manager(){
 
     bool save_flag = fileSystem_wifi.write_file("/wifi_creds.json", wifi_param_buff);
     if(!save_flag){
-        request->send_P(501, "text/html", "Error.");
-        delay(5000);
-        ESP.restart();
+        request -> send(SPIFFS, "/wifi_fail.html");
     }
-    request -> send(SPIFFS, "/wifi.html"); // Should return OK message on success
-    delay(3000);
-    ESP.restart();
+    request -> send(SPIFFS, "/wifi_success.html");
+
   });
 
   wifi_server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){

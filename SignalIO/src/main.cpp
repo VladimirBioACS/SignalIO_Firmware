@@ -18,12 +18,15 @@ bool dht_init;
 bool sensors_init;
 bool state;
 bool deep_sleep_flag;
+bool pwr_monitor_flag;
 bool relay_pin = false;
 
 String service_topic;
+String error_topic;
                  
 const char* config_path = "/config.json";
 const char* wifi_path = "/wifi_creds.json";
+const char* actuator_state_path = "/actuator_state.json";
 
 unsigned int deep_sleep_timer;
 int deep_sleep_mode;
@@ -38,6 +41,7 @@ Sleep slp;
 
 StaticJsonDocument<1024> config;
 
+
 void get_system_info(){
   Serial.print("SoC: ");
   Serial.println(SOC);
@@ -49,23 +53,25 @@ void get_system_info(){
   Serial.println(ESP.getSdkVersion());
 }
 
-void send_systme_info(){
+
+void send_system_info(){
     DynamicJsonDocument sys_info_msg_container(255);
     DynamicJsonDocument sys_info_data_container(255);
 
     JsonObject inf_msg = sys_info_data_container.to<JsonObject>();
 
-    inf_msg["SoC"] = SOC;
-    inf_msg["Firmware size"] = String(ESP.getSketchSize()).c_str();
-    inf_msg["Free firmware space"] = String(ESP.getFreeSketchSpace()).c_str();
-    inf_msg["Heap size"] = String(ESP.getHeapSize()).c_str();
-    inf_msg["Free heap"] = String(ESP.getFreeHeap()).c_str();
-    inf_msg["SDK version"] = String(ESP.getSdkVersion()).c_str();
+    inf_msg["soc"] = SOC;
+    inf_msg["firmware_size"] = String(ESP.getSketchSize());
+    inf_msg["free_firmware_space"] = String(ESP.getFreeSketchSpace());
+    inf_msg["sdk_version"] = String(ESP.getSdkVersion());
 
-    JsonArray data = sys_info_msg_container.createNestedArray("props");
+    JsonArray dt = sys_info_msg_container.createNestedArray("props");
+
     char info_msg_buff[255];
-    data.add(inf_msg);
+    dt.add(inf_msg);
     serializeJsonPretty(sys_info_msg_container, info_msg_buff);
+
+    MQTT.mqtt_pub(String(info_msg_buff).c_str(), service_topic.c_str());
 }
 
 
@@ -78,6 +84,7 @@ void load_params(){
   MQTT.callback_msg = config["mqtt_callback"];
   MQTT.sensor_port = atoi(config["module_port"]);
   MQTT.save_actuator_state_flag = atoi(config["save_actuator_state"]);
+  MQTT.mqtt_port = atoi(config["mqtt_port"]);
 
   sensor.module_pin = atoi(config["module_port"]);
 }
@@ -106,13 +113,15 @@ void deep_sleep_wakeup_reason(){
   }
 }
 
-//TODO -- add Wi-Fi reset
+
 void sys_reset(){
   int state = digitalRead(FACT_RESET_BTN);
   if(state == LOW){
      bool sys_reset_flag = fileSystem.config_reset(config_path, 0);
      bool wifi_reset_flag = fileSystem.config_reset(wifi_path, 1);
-     if(sys_reset_flag && wifi_reset_flag){
+     bool actuator_state_reset_flag = fileSystem.config_reset(actuator_state_path, 2);
+
+     if(sys_reset_flag && wifi_reset_flag && actuator_state_reset_flag){
        Serial.println("Config erased");
        for (size_t i = 0; i < 3; i++)
        {
@@ -123,39 +132,42 @@ void sys_reset(){
   }
 }
 
-//TODO -- test/calibrate
+//TODO -- calibrate
 void pwr_manager(){
   analogRead(CHARGE_MONITORING_ADC_PIN);
   int battery_charge_level = bat.getBatteryChargeLevel();
-  MQTT.mqtt_pub(packer.pack(String(battery_charge_level).c_str(), "battery_charge_level", STRING), service_topic.c_str());
+  MQTT.mqtt_pub(packer.pack(String(battery_charge_level).c_str(), "battery_charge_level", NUMBER), service_topic.c_str());
+  delay(1000);
 }
 
 
 void hall_sensor(){
   int hall_val = hallRead();
-  MQTT.mqtt_pub(packer.pack(String(hall_val).c_str(), "hall sensor", STRING), config["mqtt_topic"]);
+  Serial.println(hall_val);
+  MQTT.mqtt_pub(packer.pack(String(hall_val).c_str(), "hall sensor", NUMBER), config["mqtt_topic"]);
+  signal_led(10);
 }
 
 
 void dht_sensor(){
   if(dht_init){
-  float temperature = sensor.read_temp();
-  float humidity = sensor.read_hum();
+    float temperature = sensor.read_temp();
+    float humidity = sensor.read_hum();
 
-  if(temperature == 0 || humidity == 0){
-    MQTT.mqtt_pub(packer.message(DHT_SENSOR_NOT_FOUND, "error"), service_topic.c_str());
-    signal_led(1000);
-  }
-  else{
-  Serial.println(temperature); //Debug msg
-  Serial.println(humidity); //Debug msg
-      
-  MQTT.mqtt_pub(packer.pack("23.00", "temperature", STRING), config["mqtt_topic"]);
-  MQTT.mqtt_pub(packer.pack("40.00","humidity", STRING), config["mqtt_topic"]);
-  MQTT.mqtt_sub();
+    if(temperature == 0 || humidity == 0){
+      MQTT.mqtt_pub(packer.message(DHT_SENSOR_NOT_FOUND, "error"), error_topic.c_str());
+      signal_led(10);
+    }
+    else{
+      // Serial.println(temperature); //Debug msg
+      // Serial.println(humidity); //Debug msg
+          
+      MQTT.mqtt_pub(packer.pack(String(temperature).c_str(), "temperature", NUMBER), config["mqtt_topic"]);
+      MQTT.mqtt_pub(packer.pack(String(humidity).c_str(),"humidity", NUMBER), config["mqtt_topic"]);
+      MQTT.mqtt_sub();
 
-  signal_led(1000);
-  }
+      signal_led(10);
+      }
   }
   else
   {
@@ -163,25 +175,27 @@ void dht_sensor(){
     dht_init = true;
     Serial.println("dht11 setup done!\n"); //Debug msg
   }
+  MQTT.mqtt_sub();
 }
 
 
 void pir_motion_sensor(){
-    const char* sensor_message = config["mqtt_callback"];
+    //const char* sensor_message = config["mqtt_callback"];
     if(sensors_init){
     int res = sensor.digital_sensor_read();
     if(res == HIGH){
       if(!state){
-        Serial.println(sensor_message); 
-        MQTT.mqtt_pub(packer.pack(sensor_message, "PIR_sensor", STRING), config["mqtt_topic"]);
+        MQTT.mqtt_pub(packer.pack("on", "PIR_sensor", STRING), config["mqtt_topic"]);
         MQTT.mqtt_sub();
-        signal_led(100);
+        signal_led(10);
       }
       state = true;
     }
     else
     {
       state = false;
+      MQTT.mqtt_pub(packer.pack("off", "PIR_sensor", STRING), config["mqtt_topic"]);
+      MQTT.mqtt_sub();
       delay(100);
     }
   }
@@ -194,26 +208,31 @@ void pir_motion_sensor(){
     Serial.println("PIR sensor calibration done!\n"); //Debug msg
     digitalWrite(SIGNAL_LED, LOW);
   }
+  MQTT.mqtt_sub();
 }
 
 
 void digital_sensor(){
-    const char* sensor_message = config["mqtt_callback"];
     int res = sensor.digital_sensor_read();
     if(res == LOW){
-        Serial.println(sensor_message);
-        MQTT.mqtt_pub(packer.pack(sensor_message, "digital_sensor", STRING), config["mqtt_topic"]);
+        MQTT.mqtt_pub(packer.pack("on", "digital_sensor", STRING), config["mqtt_topic"]);
         MQTT.mqtt_sub();
-        signal_led(1000);
+        signal_led(10);
     }
+    if(res != LOW){
+      MQTT.mqtt_pub(packer.pack("off", "digital_sensor", STRING), config["mqtt_topic"]);
+      MQTT.mqtt_sub();
+      signal_led(10);
+    }
+    MQTT.mqtt_sub();
 }
 
 
 void analog_sensor(){
     int analog_sensor_message = sensor.analog_sensor_read();
-    MQTT.mqtt_pub(packer.pack(String(analog_sensor_message).c_str(), "analog sensor", STRING), config["mqtt_topic"]);
+    MQTT.mqtt_pub(packer.pack(String(analog_sensor_message).c_str(), "analog_sensor", NUMBER), config["mqtt_topic"]);
     MQTT.mqtt_sub();
-    signal_led(1000);
+    signal_led(10);
 }
 
 
@@ -224,7 +243,15 @@ void relay(){
   else
   {
     MQTT.topic_sub();
-    sensor.relay_init();
+    bool actuator_save_flag = atoi(config["save_actuator_state"]);
+    if(actuator_save_flag){
+      sensor.relay_init(actuator_state_path);
+    }
+    if(!actuator_save_flag){
+      int module_pin = atoi(config["module_port"]);
+      pinMode(module_pin, OUTPUT_OPEN_DRAIN);
+      digitalWrite(module_pin, HIGH);
+    }
     relay_pin = true;
   }
 }
@@ -242,6 +269,7 @@ void setup()
 
   Serial.begin(9600);
   get_system_info();
+  sys_reset();
 
   if(!SPIFFS.begin()){
     Serial.println("Failed to init file system");
@@ -301,10 +329,12 @@ void setup()
 
   digitalWrite(SIGNAL_LED, LOW);
 
-  MQTT.topic_sub();
+  //MQTT.topic_sub();
   const char* alias_dev = config["alias"];
+  pwr_monitor_flag = atoi(config["pwr_monitor_flag"]);
 
-  service_topic = "error/" + String(alias_dev);
+  service_topic = "device/" + String(alias_dev) + "/system_message";
+  error_topic = "device/" + String(alias_dev) + "/error";
   
   if(deep_sleep_flag){
     Serial.println("Enable deep sleep mode");
@@ -335,7 +365,7 @@ void setup()
         
         default:
           Serial.println("module not supported by deep sleep mode"); // debug
-          MQTT.mqtt_pub(packer.message(MODULE_NOT_SUPPORTED_BY_DEEPSLEEP, "error"), service_topic.c_str());
+          MQTT.mqtt_pub(packer.message(MODULE_NOT_SUPPORTED_BY_DEEPSLEEP, "error"), error_topic.c_str());
           signal_led(1000);
           break;
         }
@@ -351,6 +381,8 @@ void setup()
         slp.pin_trigger_sleep();
     }
   }
+
+  send_system_info();
   Serial.println("Done");
 }
 
@@ -358,7 +390,10 @@ void setup()
 void loop() 
 {
   sys_reset();
-  pwr_manager();
+
+  if(pwr_monitor_flag){
+    pwr_manager();
+  }
 
   switch (sensor_select)
   {
@@ -396,7 +431,7 @@ void loop()
     
   default:
     Serial.println("No module selected"); // debug
-    MQTT.mqtt_pub(packer.message(MODULE_NOT_FOUND, "error"), service_topic.c_str());
+    MQTT.mqtt_pub(packer.message(MODULE_NOT_FOUND, "error"), error_topic.c_str());
     signal_led(1000);
     break;
   }

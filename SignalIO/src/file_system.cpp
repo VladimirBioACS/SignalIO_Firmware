@@ -18,6 +18,7 @@ StaticJsonDocument<1024> FileSystem::get_config(const char* path){
   return json_config;
 }
 
+
 bool FileSystem::read_file(const char* path){
     File file = SPIFFS.open(path, "r");
     size_t size = file.size();
@@ -28,13 +29,15 @@ bool FileSystem::read_file(const char* path){
     }
     Serial.println("Config file exist: " + String(path));
     Serial.printf("File size: %i (bytes)\n", size);
-    while(file.available()){
-        Serial.write(file.read());
-    }
-    Serial.println(""); // \n
+    // // Debug region
+    // while(file.available()){
+    //     Serial.write(file.read());
+    // }
+    // Serial.println(""); // \n
     file.close();
     return true;
 }
+
 
 bool FileSystem::write_file(const char* path, char buff[]){
     File f = SPIFFS.open(path, "w");
@@ -72,6 +75,7 @@ bool FileSystem::write_file(const char* path, char buff[]){
     return false;   
 }
 
+
 bool FileSystem::config_reset(const char* path, int key){
     StaticJsonDocument<20> config_rst;
     
@@ -90,11 +94,18 @@ bool FileSystem::config_reset(const char* path, int key){
             break;
         
         case 1:
-            config_rst[""] = 0;
+            config_rst["ssid"] = "0";
+            config_rst["password"] = "0";
+            serializeJson(config_rst, config);
+            break;
+
+        case 2:
+            config_rst["state"] = "0";
             serializeJson(config_rst, config);
             break;
 
         default:
+            Serial.println("default erase");
             break;
         }
 

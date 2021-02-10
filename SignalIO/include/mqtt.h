@@ -13,7 +13,8 @@ class mqtt
 {
 private:
     const int port = 80;
-    const int mqttPort = 1883;
+    // const int mqttPort = 1883;
+    
 
 public:
     const char* device_id;
@@ -22,6 +23,7 @@ public:
     const char* mqttPassword;
     const char* topic;
     const char* callback_msg;
+    int mqtt_port;
     int save_actuator_state_flag;
 
     uint8_t sensor_port;

@@ -36,7 +36,7 @@ public:
     void sensor_init(void);
     int digital_sensor_read(void);
     int analog_sensor_read(void);
-    void relay_init(void);
+    void relay_init(const char* actuator_state_path);
 };
 
 #endif
