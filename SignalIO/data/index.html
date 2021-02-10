@@ -109,6 +109,10 @@
                             <br>
                             <input name="mqtt_brocker" type="text" class="form-control" placeholder="MQTT brocker" required maxlength="150">
                             <br>
+                            MQTT Port
+                            <br>
+                            <input name="mqtt_port" type="text" class="form-control" placeholder="MQTT brocker" required maxlength="10">
+                            <br>
                             MQTT User
                             <br>
                             <input name="mqtt_user" type="text" class="form-control" placeholder="MQTT user" required maxlength="64">
@@ -121,9 +125,9 @@
                             <br>
                             <input name="mqtt_topic" type="text" class="form-control" placeholder="MQTT topic" required maxlength="150">
                             <br>
-                            MQTT Message
+                            MQTT Actuator Message
                             <br>
-                            <input name="mqtt_callback" type="text" class="form-control" placeholder="MQTT message" required maxlength="64">
+                            <input name="mqtt_callback" type="text" class="form-control" placeholder="MQTT actuator message" required maxlength="64">
                           </div>
                           </div>
                         </div>
@@ -148,10 +152,17 @@
                             <br>
                             Enable DeepSleep
                             <br>
-                            <select name="deepsleep_flag" class="form-control" id="sensor_type">
+                            <select name="deepsleep_flag" class="form-control" id="deepsleep_flag">
                               <option value="1">On</option>
                               <option value="0">Off</option>
                           </select>
+                          <br>
+                          Enable Power monitoring
+                          <br>
+                          <select name="pwr_monitor_flag" class="form-control" id="pwr_monitor_flag">
+                            <option value="1">On</option>
+                            <option value="0">Off</option>
+                        </select>
                           </div>
                           </div>
                         </div>

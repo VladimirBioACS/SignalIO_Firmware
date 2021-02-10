@@ -40,7 +40,7 @@ void reconnect(const char* topic, const char* device_id, const char* mqttUser, c
 void actuator_callback(char *msg, byte *payload, unsigned int length){
 
     StaticJsonDocument<200> msg_callback;
-    StaticJsonDocument<200> document;
+    //StaticJsonDocument<200> document;
     
     DynamicJsonDocument actuator_cur_state(20);
     char actuator_cur_state_buff[20];
@@ -54,12 +54,12 @@ void actuator_callback(char *msg, byte *payload, unsigned int length){
     for (unsigned int i = 0; i < length; i++) {
        received_message += (char)payload[i];
     }
-    // Serial.println(received_message); // debug
+    Serial.println(received_message); // debug
 
     DeserializationError error = deserializeJson(msg_callback,received_message);
 
-    validation = msg_callback["type"];
-    message = msg_callback["actuator_state"];
+    validation = msg_callback["props"][0]["type"];
+    message = msg_callback["props"][0]["value"];
 
     if(String(validation) == "request"){
         if(String(message) == state_changer_on){
@@ -93,8 +93,8 @@ void actuator_callback(char *msg, byte *payload, unsigned int length){
     }
     
     if(error){
-        // Serial.println(F("deserializeJson() failed: ")); // debug
-        // Serial.println(error.c_str()); // debug
+        Serial.println(F("deserializeJson() failed: ")); // debug
+        Serial.println(error.c_str()); // debug
         clientMQTT.publish(mqtt_topic, relay_msg_packer.message(ACTUATOR_REQUEST_NOT_RECOGNIZED, "error").c_str());
     }
 }
@@ -104,14 +104,14 @@ bool mqtt::mqtt_connect(){
     module_pin = sensor_port;
     mqtt_callback_message = callback_msg;
     mqtt_topic = topic;
-    save_actuator_state_flag = save_actuator_state_flag;
+    save_actuator_state = save_actuator_state_flag;
 
     while (!clientMQTT.connected())
     {   
-        clientMQTT.setServer(mqttServer, mqttPort); 
+        clientMQTT.setServer(mqttServer, mqtt_port); 
         if (clientMQTT.connect(device_id, mqttUser, mqttPassword))
         { 
-            clientMQTT.setServer(mqttServer, mqttPort);
+            clientMQTT.setServer(mqttServer, mqtt_port);
             clientMQTT.setCallback(actuator_callback);
         }
         else

@@ -7,6 +7,7 @@
 #define REQUEST "request"
 #define RESPONSE "response"
 #define STRING "string"
+#define NUMBER "number"
 #define MODULE "module"
 
 class MessagePacker

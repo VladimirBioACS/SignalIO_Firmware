@@ -133,7 +133,12 @@ h5{
 }
 .card{
   border:none;
-  height:450px;
+  height:520px;
 }
+
+.carousel-item{
+  height:600px;
+}
+
 .toggle.ios, .toggle-on.ios, .toggle-off.ios { border-radius: 20px; }
 .toggle.ios .toggle-handle { border-radius: 20px; }

@@ -91,8 +91,8 @@ void ota_update(AsyncWebServerRequest *request){
         Serial.printf("Use your local IP adress to udate board: ");
         Serial.println(WiFi.localIP());
 
-        ArduinoOTA.setHostname(auth_login);
-        ArduinoOTA.setPassword(auth_password);
+        // ArduinoOTA.setHostname(auth_login);
+        // ArduinoOTA.setPassword(auth_password);
 
         ArduinoOTA.setPort(ota_port);
 
@@ -195,7 +195,7 @@ void config_menu(){
         if(!request->authenticate(auth_login, auth_password)){
             return request->requestAuthentication();
         }
-        request->send(SPIFFS, "/info.html", "image/svg");
+        request->send(SPIFFS, "/info.html");
     });
 
 

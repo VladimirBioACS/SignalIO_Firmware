@@ -1,7 +1,6 @@
 #include "sensors.h"
 
 sensors sensor_pin;
-FileSystem actuator_file_system;
 DHT dht(sensor_pin.module_pin, DHTTYPE);
 
 
@@ -54,11 +53,16 @@ int sensors::analog_sensor_read(){
 }
 
 
-void sensors::relay_init(){
-    StaticJsonDocument<20> actuator_status;
+void sensors::relay_init(const char* actuator_state_path){
+    FileSystem actuator_file_system;
+    StaticJsonDocument<255> actuator_status;
+    
     actuator_status = actuator_file_system.get_config("/actuator_state.json");
+    
     int actuator_state = atoi(actuator_status["state"]);
+
     pinMode(module_pin, OUTPUT_OPEN_DRAIN);
+    
     switch (actuator_state)
     {
     case 1:
@@ -70,6 +74,7 @@ void sensors::relay_init(){
         break;
     
     default:
+        digitalWrite(module_pin, HIGH);
         break;
     }
 }
