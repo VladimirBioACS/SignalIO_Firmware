@@ -10,6 +10,8 @@
 #include "system_codes.h"
 #include "deep_sleep.h"
 
+#define SIGNAL_LED 19
+
 uint8_t sensor_select;
 
 bool debug_state;
@@ -283,6 +285,8 @@ void setup()
     else
     {
       Serial.println("Wifi not connected");
+      Serial.println("Start scanning...");
+      WifiConn.scan_networks();
       WifiConn.wifi_manager();
       delay(5000);
       ESP.restart();

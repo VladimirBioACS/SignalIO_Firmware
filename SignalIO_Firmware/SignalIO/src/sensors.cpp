@@ -36,9 +36,6 @@ void sensors::sensor_init(){
     pinMode(module_pin, INPUT);
     pinMode(14, OUTPUT_OPEN_DRAIN);
     digitalWrite(14, LOW);
-    // for(int i=0; i<=calibration_time; i++){
-    //     delay(1000);
-    // }
 }
 
 
