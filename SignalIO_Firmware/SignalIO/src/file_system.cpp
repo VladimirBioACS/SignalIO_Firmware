@@ -28,11 +28,6 @@ bool FileSystem::read_file(const char* path){
     }
     Serial.println("Config file exist: " + String(path));
     Serial.printf("File size: %i (bytes)\n", size);
-    // // Debug region
-    // while(file.available()){
-    //     Serial.write(file.read());
-    // }
-    // Serial.println(""); // \n
     file.close();
     return true;
 }

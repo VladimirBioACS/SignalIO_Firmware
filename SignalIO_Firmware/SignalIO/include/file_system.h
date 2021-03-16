@@ -6,12 +6,6 @@
 #include <SPIFFS.h>
 #include "json_lib.h"
 
-#ifndef CONFIG_LITTLEFS_FOR_IDF_3_2
- #include <time.h>
-#endif
-
-#define FORMAT_LITTLEFS_IF_FAILED true
-
 class FileSystem{
     private:
         const int buff_size = 1024;

@@ -54,7 +54,6 @@ void actuator_callback(char *msg, byte *payload, unsigned int length){
     for (unsigned int i = 0; i < length; i++) {
        received_message += (char)payload[i];
     }
-    // Serial.println(received_message); // debug
 
     DeserializationError error = deserializeJson(msg_callback,received_message);
 
@@ -93,8 +92,6 @@ void actuator_callback(char *msg, byte *payload, unsigned int length){
     }
     
     if(error){
-        // Serial.println(F("deserializeJson() failed: ")); // debug
-        // Serial.println(error.c_str()); // debug
         clientMQTT.publish(mqtt_topic, relay_msg_packer.message(ACTUATOR_REQUEST_NOT_RECOGNIZED, "error").c_str());
     }
 }
